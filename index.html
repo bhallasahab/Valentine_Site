@@ -199,7 +199,7 @@
       transform: translate(-50%, -50%) scale(1);
     }
 
-    /* Music */
+    /* Music (premium UI: hidden unless needed) */
     .music-ui{
       position: fixed;
       right: 14px;
@@ -215,6 +215,17 @@
       border-radius: 999px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.12);
       font-size: 13px;
+
+      /* NEW: start hidden */
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+    .music-ui.show{
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
     }
     .music-ui button{
       box-shadow:none;
@@ -323,50 +334,73 @@
     </div>
   </div>
 
-  <!-- Music UI -->
+  <!-- Music UI (premium behavior controlled by JS) -->
   <div class="music-ui">
-    <span class="music-status" id="musicStatus">Music: trying autoplay…</span>
+    <span class="music-status" id="musicStatus">Music</span>
     <button id="musicBtn">Tap to play</button>
   </div>
 
   <audio id="bgm" loop preload="auto"></audio>
 
 <script>
-  // ========= MUSIC =========
-  // NOTE: Google Drive "view" links won't autoplay as raw MP3.
-  // You need a *direct* file URL or host the MP3 somewhere public.
-  // We'll set it anyway, and you can replace with a direct link.
+  // ========= MUSIC (Premium UI) =========
   const audio = document.getElementById('bgm');
   const musicStatus = document.getElementById('musicStatus');
   const musicBtn = document.getElementById('musicBtn');
+  const musicUI = document.querySelector('.music-ui');
 
-  // Put your audio link here (ideally direct .mp3 URL)
+  // Host your MP3 in the same GitHub repo (same folder as index.html)
+  // Upload a file named: music.mp3
   const musicUrl = "music.mp3";
   audio.src = musicUrl;
+
+  function showMusicUI(text = "Music: tap to play 🎶", btnText = "Tap to play") {
+    musicStatus.textContent = text;
+    musicBtn.textContent = btnText;
+    musicUI.classList.add('show');
+  }
+
+  function hideMusicUI() {
+    musicUI.classList.remove('show');
+  }
 
   async function tryPlayMusic() {
     try {
       await audio.play();
       musicStatus.textContent = "Music: playing 🎶";
       musicBtn.textContent = "Pause";
+      musicUI.classList.add('show');
+      setTimeout(() => hideMusicUI(), 1200);
+      return true;
     } catch (e) {
-      musicStatus.textContent = "Music: tap to play 🎶";
-      musicBtn.textContent = "Tap to play";
+      showMusicUI("Music: tap to play 🎶", "Tap to play");
+      return false;
     }
   }
+
+  audio.addEventListener('play', () => {
+    musicStatus.textContent = "Music: playing 🎶";
+    musicBtn.textContent = "Pause";
+    musicUI.classList.add('show');
+    setTimeout(() => hideMusicUI(), 1200);
+  });
+
+  audio.addEventListener('pause', () => {
+    showMusicUI("Music: paused", "Play");
+  });
 
   musicBtn.addEventListener('click', async () => {
     if (!audio.paused) {
       audio.pause();
-      musicStatus.textContent = "Music: paused";
-      musicBtn.textContent = "Play";
       return;
     }
     await tryPlayMusic();
   });
 
-  // attempt autoplay on load (may be blocked)
-  window.addEventListener('load', tryPlayMusic);
+  window.addEventListener('load', async () => {
+    const ok = await tryPlayMusic();
+    if (!ok) showMusicUI("Music: tap to play 🎶", "Tap to play");
+  });
 
   // ========= BACKGROUND HEARTS =========
   const bg = document.getElementById('bg');
@@ -412,14 +446,10 @@
     const rect = btnArea.getBoundingClientRect();
     const padding = 10;
 
-    // random position within area (keep inside)
     const x = padding + Math.random() * (rect.width - padding*2);
     const y = padding + Math.random() * (rect.height - padding*2);
 
-    // shrink NO a bit
     noScale = Math.max(0.55, noScale - 0.08);
-
-    // grow YES a bit
     yesScale = Math.min(1.9, yesScale + 0.12);
 
     noBtn.style.left = x + "px";
@@ -430,14 +460,12 @@
     yesBtn.style.boxShadow = "0 14px 28px rgba(0,0,0,0.18)";
   }
 
-  // On desktop hover, on mobile touchstart
   noBtn.addEventListener('mouseenter', moveNoButton);
   noBtn.addEventListener('touchstart', (e) => {
     e.preventDefault();
     moveNoButton();
   }, { passive:false });
 
-  // If she somehow clicks NO, still dodge
   noBtn.addEventListener('click', (e) => {
     e.preventDefault();
     moveNoButton();
@@ -471,7 +499,6 @@
       vy: rand(2.5, 5.2),
       rot: rand(0, Math.PI*2),
       vr: rand(-0.12, 0.12),
-      // no fixed colors requested; browser defaults to black if not set, so we randomize safely:
       color: `hsl(${Math.floor(rand(0, 360))}, 90%, 60%)`
     }));
 

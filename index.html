@@ -82,58 +82,68 @@
     }
 
     /* Landing heart */
-    .big-heart{
-      width: 220px;
-      height: 220px;
-      background: #ff2e73;
-      transform: rotate(45deg);
-      position:relative;
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      cursor:pointer;
-      transition: transform 200ms ease, filter 200ms ease;
-      animation: pulse 1.35s infinite ease-in-out;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      user-select:none;
-    }
-    .big-heart:before,
-    .big-heart:after{
-      content:"";
-      position:absolute;
-      width:220px;
-      height:220px;
-      background:#ff2e73;
-      border-radius:50%;
-    }
-    .big-heart:before{ left:-110px; top:0; }
-    .big-heart:after{ left:0; top:-110px; }
+.big-heart{
+  position: relative;
+  width: 260px;
+  height: 240px;
+  background: #ff2e73;
+  transform: rotate(-45deg);
+  cursor: pointer;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+  animation: pulse 1.3s infinite ease-in-out;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 22px;
+}
 
-    @keyframes pulse{
-      0%,100%{ transform: rotate(45deg) scale(1); }
-      50%    { transform: rotate(45deg) scale(1.06); }
-    }
+.big-heart::before,
+.big-heart::after{
+  content:"";
+  position:absolute;
+  width:260px;
+  height:240px;
+  background:#ff2e73;
+  border-radius:50%;
+}
 
-    .big-heart:hover{
-      filter: brightness(1.03);
-    }
-    .heart-text{
-      position:absolute;
-      transform: rotate(-45deg);
-      color:white;
-      font-weight: 700;
-      letter-spacing: .3px;
-      font-size: 18px;
-      padding: 10px 16px;
-      background: rgba(0,0,0,0.15);
-      border-radius: 999px;
-      backdrop-filter: blur(6px);
-    }
-    .hint{
-      font-size: 14px;
-      opacity: .85;
-    }
+.big-heart::before{
+  top:-120px;
+  left:0;
+}
+
+.big-heart::after{
+  left:120px;
+  top:0;
+}
+
+@keyframes pulse{
+  0%,100%{ transform: rotate(-45deg) scale(1); }
+  50%{ transform: rotate(-45deg) scale(1.07); }
+}
+
+.big-heart:hover{
+  filter: brightness(1.05);
+}
+
+.heart-text{
+  position:absolute;
+  transform: rotate(45deg);
+  color:white;
+  font-weight: 900;
+  font-size: 26px;
+  text-align:center;
+  width: 220px;
+  line-height:1.2;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+
+/* Bigger landing line */
+.hint{
+  font-size: 18px;
+  font-weight: 650;
+  opacity: .9;
+}
 
     /* Proposal card */
     .card{
@@ -282,14 +292,34 @@
     }
 
     /* Responsive */
-    @media (max-width: 420px){
-      .big-heart{ width: 190px; height: 190px; }
-      .big-heart:before, .big-heart:after{ width:190px; height:190px; }
-      .big-heart:before{ left:-95px; }
-      .big-heart:after{ top:-95px; }
-      .heart-text{ font-size: 16px; }
-      .buttons{ height: 140px; }
-    }
+   @media (max-width: 420px){
+  .big-heart{
+    width: 220px;
+    height: 200px;
+  }
+  .big-heart::before,
+  .big-heart::after{
+    width: 220px;
+    height: 200px;
+  }
+  .big-heart::before{
+    top: -100px;
+    left: 0;
+  }
+  .big-heart::after{
+    left: 100px;
+    top: 0;
+  }
+  .heart-text{
+    font-size: 20px;
+    width: 190px;
+  }
+  .hint{
+    font-size: 16px;
+  }
+  .buttons{ height: 140px; }
+}
+
   </style>
 </head>
 <body>
@@ -315,7 +345,7 @@
       <div class="big-heart" id="openHeart" aria-label="Open">
         <div class="heart-text">Click here to open</div>
       </div>
-      <div class="hint">A tiny surprise is hiding inside.</div>
+       <div class="hint">Click the heart to open your surprise 💖</div>
     </div>
 
     <!-- Scene 2 -->

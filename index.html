@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Valentine Surprise</title>
+  <style>
+    :root{
+      --bg: #ffd6e7;
+      --red: #8b0000;
+      --black: #111;
+      --card: rgba(255,255,255,0.55);
+      --shadow: 0 18px 45px rgba(0,0,0,0.12);
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      height:100vh;
+      overflow:hidden;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at 20% 10%, #ffe6f1 0%, var(--bg) 45%, #ffc0da 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: var(--black);
+    }
+
+    /* subtle floating hearts in background */
+    .bg-heart{
+      position:absolute;
+      width:18px;
+      height:18px;
+      opacity:0.25;
+      transform: rotate(45deg);
+      background: #ff4d88;
+      animation: floatUp linear infinite;
+      border-radius: 3px;
+    }
+    .bg-heart:before, .bg-heart:after{
+      content:"";
+      position:absolute;
+      width:18px;
+      height:18px;
+      background:#ff4d88;
+      border-radius:50%;
+    }
+    .bg-heart:before{ left:-9px; top:0; }
+    .bg-heart:after{ left:0; top:-9px; }
+
+    @keyframes floatUp{
+      from { transform: translateY(80vh) rotate(45deg); }
+      to   { transform: translateY(-120vh) rotate(45deg); }
+    }
+
+    .container{
+      width:min(720px, 92vw);
+      padding: 22px;
+      text-align:center;
+      position:relative;
+      z-index:2;
+    }
+
+    /* Scenes */
+    .scene{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap: 14px;
+      opacity:0;
+      pointer-events:none;
+      transform: scale(0.98);
+      transition: opacity 500ms ease, transform 600ms cubic-bezier(.2,.8,.2,1);
+    }
+    .scene.active{
+      opacity:1;
+      pointer-events:auto;
+      transform: scale(1);
+    }
+
+    /* Landing heart */
+    .big-heart{
+      width: 220px;
+      height: 220px;
+      background: #ff2e73;
+      transform: rotate(45deg);
+      position:relative;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      cursor:pointer;
+      transition: transform 200ms ease, filter 200ms ease;
+      animation: pulse 1.35s infinite ease-in-out;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+    }
+    .big-heart:before,
+    .big-heart:after{
+      content:"";
+      position:absolute;
+      width:220px;
+      height:220px;
+      background:#ff2e73;
+      border-radius:50%;
+    }
+    .big-heart:before{ left:-110px; top:0; }
+    .big-heart:after{ left:0; top:-110px; }
+
+    @keyframes pulse{
+      0%,100%{ transform: rotate(45deg) scale(1); }
+      50%    { transform: rotate(45deg) scale(1.06); }
+    }
+
+    .big-heart:hover{
+      filter: brightness(1.03);
+    }
+    .heart-text{
+      position:absolute;
+      transform: rotate(-45deg);
+      color:white;
+      font-weight: 700;
+      letter-spacing: .3px;
+      font-size: 18px;
+      padding: 10px 16px;
+      background: rgba(0,0,0,0.15);
+      border-radius: 999px;
+      backdrop-filter: blur(6px);
+    }
+    .hint{
+      font-size: 14px;
+      opacity: .85;
+    }
+
+    /* Proposal card */
+    .card{
+      width:min(680px, 95vw);
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.55);
+      border-radius: 26px;
+      padding: 26px 18px;
+      box-shadow: var(--shadow);
+    }
+    h1{
+      margin: 6px 0 10px;
+      color: var(--red);
+      font-size: clamp(28px, 4.3vw, 44px);
+      line-height: 1.1;
+      font-weight: 850;
+    }
+    .line{
+      margin: 0 auto 18px;
+      font-size: clamp(16px, 2.5vw, 20px);
+      line-height: 1.55;
+      max-width: 56ch;
+      color: #111;
+    }
+
+    .buttons{
+      display:flex;
+      gap: 12px;
+      justify-content:center;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top: 8px;
+      position: relative;
+      height: 120px; /* gives room for NO to move */
+    }
+    button{
+      border: none;
+      padding: 14px 22px;
+      border-radius: 999px;
+      font-weight: 800;
+      letter-spacing: .4px;
+      cursor:pointer;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+      font-size: 16px;
+      touch-action: manipulation;
+      position: relative;
+    }
+    button:active{ transform: scale(0.98); }
+
+    #yesBtn{
+      background: #16a34a;
+      color: white;
+      transform: scale(1);
+    }
+    #noBtn{
+      background: #ef4444;
+      color: white;
+      position:absolute; /* we will move it inside .buttons */
+      left: 55%;
+      top: 55%;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* Music */
+    .music-ui{
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 5;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.7);
+      padding: 10px 12px;
+      border-radius: 999px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+      font-size: 13px;
+    }
+    .music-ui button{
+      box-shadow:none;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      background: #111;
+      color: #fff;
+    }
+    .music-status{
+      opacity:.85;
+      font-weight: 650;
+    }
+
+    /* Confetti canvas */
+    #confetti{
+      position: fixed;
+      inset:0;
+      pointer-events:none;
+      z-index: 10;
+    }
+
+    /* Yes overlay message */
+    .overlay{
+      position: fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index: 11;
+      background: rgba(0,0,0,0.25);
+      backdrop-filter: blur(2px);
+      padding: 18px;
+    }
+    .overlay.show{ display:flex; }
+    .overlay .msg{
+      background: rgba(255,255,255,0.85);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 24px;
+      padding: 18px 18px;
+      width:min(560px, 92vw);
+      text-align:center;
+      box-shadow: var(--shadow);
+    }
+    .overlay .msg h2{
+      margin: 6px 0 8px;
+      font-size: 28px;
+      color: #111;
+    }
+    .overlay .msg p{
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.45;
+    }
+
+    /* Responsive */
+    @media (max-width: 420px){
+      .big-heart{ width: 190px; height: 190px; }
+      .big-heart:before, .big-heart:after{ width:190px; height:190px; }
+      .big-heart:before{ left:-95px; }
+      .big-heart:after{ top:-95px; }
+      .heart-text{ font-size: 16px; }
+      .buttons{ height: 140px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- background floating hearts -->
+  <div id="bg"></div>
+
+  <canvas id="confetti"></canvas>
+
+  <div class="overlay" id="overlay">
+    <div class="msg">
+      <h2>Yaaaay! 💖</h2>
+      <p>
+        You just made my whole day (and my whole year).<br/>
+        Happy Valentine’s, my love. 🌹❤️
+      </p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Scene 1 -->
+    <div class="scene active" id="scene1">
+      <div class="big-heart" id="openHeart" aria-label="Open">
+        <div class="heart-text">Click here to open</div>
+      </div>
+      <div class="hint">A tiny surprise is hiding inside.</div>
+    </div>
+
+    <!-- Scene 2 -->
+    <div class="scene" id="scene2">
+      <div class="card">
+        <h1>Will you be my Valentine?</h1>
+        <div class="line">
+          Sach dassa? Teri vibe hi alag level di ae… vekh ke lagda ae main right frequency te tune ho gaya. 🌹❤️
+        </div>
+
+        <div class="buttons" id="btnArea">
+          <button id="yesBtn">YES</button>
+          <button id="noBtn">NO</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Music UI -->
+  <div class="music-ui">
+    <span class="music-status" id="musicStatus">Music: trying autoplay…</span>
+    <button id="musicBtn">Tap to play</button>
+  </div>
+
+  <audio id="bgm" loop preload="auto"></audio>
+
+<script>
+  // ========= MUSIC =========
+  // NOTE: Google Drive "view" links won't autoplay as raw MP3.
+  // You need a *direct* file URL or host the MP3 somewhere public.
+  // We'll set it anyway, and you can replace with a direct link.
+  const audio = document.getElementById('bgm');
+  const musicStatus = document.getElementById('musicStatus');
+  const musicBtn = document.getElementById('musicBtn');
+
+  // Put your audio link here (ideally direct .mp3 URL)
+  const musicUrl = "https://drive.google.com/uc?export=download&id=13WqnNAQ0qqoSEvP4vMRiBPav-tL9KNav";
+  audio.src = musicUrl;
+
+  async function tryPlayMusic() {
+    try {
+      await audio.play();
+      musicStatus.textContent = "Music: playing 🎶";
+      musicBtn.textContent = "Pause";
+    } catch (e) {
+      musicStatus.textContent = "Music: tap to play 🎶";
+      musicBtn.textContent = "Tap to play";
+    }
+  }
+
+  musicBtn.addEventListener('click', async () => {
+    if (!audio.paused) {
+      audio.pause();
+      musicStatus.textContent = "Music: paused";
+      musicBtn.textContent = "Play";
+      return;
+    }
+    await tryPlayMusic();
+  });
+
+  // attempt autoplay on load (may be blocked)
+  window.addEventListener('load', tryPlayMusic);
+
+  // ========= BACKGROUND HEARTS =========
+  const bg = document.getElementById('bg');
+  function spawnBgHearts() {
+    for (let i = 0; i < 18; i++) {
+      const h = document.createElement('div');
+      h.className = 'bg-heart';
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.animationDuration = (8 + Math.random() * 10) + 's';
+      h.style.animationDelay = (-Math.random() * 12) + 's';
+      h.style.opacity = (0.12 + Math.random() * 0.22).toFixed(2);
+      h.style.transform = `translateY(${60 + Math.random()*30}vh) rotate(45deg)`;
+      bg.appendChild(h);
+    }
+  }
+  spawnBgHearts();
+
+  // ========= SCENE SWITCH =========
+  const scene1 = document.getElementById('scene1');
+  const scene2 = document.getElementById('scene2');
+  const openHeart = document.getElementById('openHeart');
+
+  function goToScene2(){
+    scene1.classList.remove('active');
+    setTimeout(() => scene2.classList.add('active'), 220);
+  }
+
+  openHeart.addEventListener('click', async () => {
+    // user gesture -> music should play reliably
+    await tryPlayMusic();
+    goToScene2();
+  });
+
+  // ========= NO BUTTON TWIST =========
+  const noBtn = document.getElementById('noBtn');
+  const yesBtn = document.getElementById('yesBtn');
+  const btnArea = document.getElementById('btnArea');
+
+  let noScale = 1;
+  let yesScale = 1;
+
+  function moveNoButton() {
+    const rect = btnArea.getBoundingClientRect();
+    const padding = 10;
+
+    // random position within area (keep inside)
+    const x = padding + Math.random() * (rect.width - padding*2);
+    const y = padding + Math.random() * (rect.height - padding*2);
+
+    // shrink NO a bit
+    noScale = Math.max(0.55, noScale - 0.08);
+
+    // grow YES a bit
+    yesScale = Math.min(1.9, yesScale + 0.12);
+
+    noBtn.style.left = x + "px";
+    noBtn.style.top = y + "px";
+    noBtn.style.transform = `translate(-50%, -50%) scale(${noScale})`;
+
+    yesBtn.style.transform = `scale(${yesScale})`;
+    yesBtn.style.boxShadow = "0 14px 28px rgba(0,0,0,0.18)";
+  }
+
+  // On desktop hover, on mobile touchstart
+  noBtn.addEventListener('mouseenter', moveNoButton);
+  noBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    moveNoButton();
+  }, { passive:false });
+
+  // If she somehow clicks NO, still dodge
+  noBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    moveNoButton();
+  });
+
+  // ========= YES CONFETTI =========
+  const canvas = document.getElementById('confetti');
+  const ctx = canvas.getContext('2d');
+  const overlay = document.getElementById('overlay');
+
+  function resizeCanvas(){
+    canvas.width = window.innerWidth * devicePixelRatio;
+    canvas.height = window.innerHeight * devicePixelRatio;
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  let confettiPieces = [];
+  let confettiRunning = false;
+
+  function rand(min, max){ return Math.random()*(max-min)+min; }
+
+  function startConfetti(durationMs = 4500){
+    confettiPieces = Array.from({length: 180}, () => ({
+      x: rand(0, window.innerWidth),
+      y: rand(-window.innerHeight, 0),
+      w: rand(6, 10),
+      h: rand(8, 14),
+      vx: rand(-1.2, 1.2),
+      vy: rand(2.5, 5.2),
+      rot: rand(0, Math.PI*2),
+      vr: rand(-0.12, 0.12),
+      // no fixed colors requested; browser defaults to black if not set, so we randomize safely:
+      color: `hsl(${Math.floor(rand(0, 360))}, 90%, 60%)`
+    }));
+
+    confettiRunning = true;
+    const start = performance.now();
+
+    function frame(t){
+      if (!confettiRunning) return;
+      ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+
+      for (const p of confettiPieces){
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+
+        if (p.y > window.innerHeight + 30){
+          p.y = rand(-200, -20);
+          p.x = rand(0, window.innerWidth);
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+        ctx.restore();
+      }
+
+      if (t - start < durationMs){
+        requestAnimationFrame(frame);
+      } else {
+        confettiRunning = false;
+        ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  yesBtn.addEventListener('click', () => {
+    startConfetti(5200);
+    overlay.classList.add('show');
+    setTimeout(() => overlay.classList.remove('show'), 5200);
+  });
+</script>
+</body>
+</html>
